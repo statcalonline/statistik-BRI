@@ -1,0 +1,99 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+
+
+```{r}
+library(readxl)
+
+
+    dat <- read_xlsx("Data Keuangan Bank BRI.xlsx")
+    
+    dat <- as.data.frame(dat)
+    
+    
+    print(dat)
+```
+
+
+```{r}
+dat_proses <- dat[c(2,3,4,5,6,7,8,9)]
+
+dat_proses
+```
+
+
+
+
+
+```{r}
+library(corrplot)
+
+korelasi <- cor(dat_proses)
+
+corrplot(korelasi, type = "upper", order = "hclust", 
+         tl.col = "black", tl.srt = 45,
+         addCoef.col = 1,
+         number.cex = .7)
+
+
+```
+
+
+
+
+```{r}
+
+
+dataku <- dat[c("Tahun", "ROA (%)", "ROE (%)")]
+
+susun_data = reshape2::melt(data = dataku, id.vars = c("Tahun")   )
+    
+susun_data
+```
+
+
+```{r}
+
+   gambar <-  ggplot(susun_data, aes(x = Tahun, y = value, fill = variable))+
+      facet_wrap( ~variable,  scales = "free",  ncol = 1) +
+       geom_line(color="turquoise4") +
+       theme_minimal() 
+    
+
+gambar
+    
+
+```
+
+
+
+```{r}
+library(ggplot2)
+
+
+
+
+p <- ggplot(data = NULL, aes(x = x, y = y)) +
+       geom_line(color="turquoise4") +
+       theme_minimal() + 
+       labs(x="", y="Sales", title="Total Sales (Past 100 Days)") +
+       theme(plot.title = element_text(hjust=0.5, size=20, face="bold"))
+
+
+p
+```
+
+
+
+
+
+
+
+
+
+
+
+
