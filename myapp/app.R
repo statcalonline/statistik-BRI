@@ -11,6 +11,7 @@ library(shiny)
 library(corrplot)
 library(ggplot2)
 library(reshape2)
+library(urca)
 
 
 #library(shinyAce)
@@ -107,6 +108,101 @@ modul_bank_BRI_ui <- function(id) {
     
     
     
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    br(),
+    
+    br(),
+    br(),
+    
+    
+    
+    h2("Uji Stasioner pada Level", style="
+    font-family: 'cursive';
+    color: 	blue;
+    font-size:40px;
+    font-weight: bold; 
+    text-align:center
+    
+    "),
+    
+    
+    br(),
+    
+    
+    uiOutput(ns("nama_variabel_uji_stasioner")), 
+    
+    
+    br(),
+    
+    DT::DTOutput(ns("uji_stasioner_level")), 
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    br(),
+    br(),
+    
+    
+    
+    h2("Uji Stasioner pada First Difference", style="
+    font-family: 'cursive';
+    color: 	blue;
+    font-size:40px;
+    font-weight: bold; 
+    text-align:center
+    
+    "),
+    
+    br(),
+    
+    
+    
+    DT::DTOutput(ns("uji_stasioner_first_difference")), 
     
     
     
@@ -547,6 +643,242 @@ modul_bank_BRI_server <- function(input, output, session) {
   
   
   
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  #############################################################
+  #################Uji Stasioner pada Level####################
+  #############################################################
+  
+  
+  output$nama_variabel_uji_stasioner <- renderUI({
+    
+    
+    
+    
+    checkboxGroupInput(session$ns("terpilih_nama_variabel_uji_stasioner"), 
+                       label="Pilih Variabel:", choices = c(kirim_nama_variabel_matriks_korelasi()), 
+                       selected=c("ROA (%)", "ROE (%)"), inline = TRUE)
+    
+    
+    
+    
+    
+    
+  }) #buka_pilih_topik
+  
+  
+  
+  
+  output$uji_stasioner_level <- DT::renderDT({
+    
+    
+    data_lengkap <- ambil_data_BRI()
+    
+    
+    nama_pilih <- input$terpilih_nama_variabel_uji_stasioner
+    
+    dat_proses <- data_lengkap[c(nama_pilih)]
+    
+
+    #############
+    
+    
+    terpilih_nama_tahun <- input$terpilih_nama_tahun
+    terpilih_nama_tahun <- as.numeric(terpilih_nama_tahun)
+    
+    full_tahun <- data_lengkap[,"Tahun"]
+    
+    
+    indeks <- full_tahun %in% terpilih_nama_tahun 
+    indeks <- which(indeks==TRUE)
+    
+    dat_proses <- dat_proses[c(indeks),]
+    
+    
+    
+    ################
+    
+    
+    dat_VECM <- dat_proses
+    
+    Tstat <- vector(mode = "numeric")
+    Tkritis <- vector(mode = "numeric")
+    kesimpulan <- vector(mode = "character")
+    
+    #nama_pilih <- colnames(dat_proses)
+    
+    
+    for(i in 1 : length(nama_pilih) )
+    {
+      X <- dat_VECM[,i]
+      
+      hasil = urca::ur.df(X, type = c("none"),
+                          lags = 0, selectlags = "AIC")
+      
+      #hasil@teststat
+      
+      #hasil@cval
+      
+      Tstat[i] <- hasil@teststat
+      Tkritis[i] <- hasil@cval[2]
+      
+      if(abs(Tstat[i]) < abs(Tkritis[i]))
+      {
+        
+        kalimat = paste0("Data pada Variabel ", nama_pilih[i] , " Tidak Stasioner pada Level")
+        kesimpulan[i] <- kalimat
+        
+      }
+      
+      if(abs(Tstat[i]) >= abs(Tkritis[i]))
+      {
+        
+        kalimat = paste0("Data pada Variabel ", nama_pilih[i] , " Stasioner pada Level")
+        kesimpulan[i] <- kalimat
+        
+      }
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+    }
+    
+    
+    dframe <- data.frame(nama_pilih, Tstat, Tkritis, kesimpulan)
+    colnames(dframe) <- c("Variabel", "Statistik T", "Nilai Kritis T pada Tingkat Signifikansi 5%", "Kesimpulan")
+    
+    
+    print(dframe)
+    
+    
+    
+    
+    
+    
+  })
+  
+  
+  
+  
+  
+  ##############################################################
+  ##############Uji Stasioner pada First Difference#############
+  
+  
+  
+  
+  
+  output$uji_stasioner_first_difference <- DT::renderDT({
+    
+    
+    data_lengkap <- ambil_data_BRI()
+    
+    
+    nama_pilih <- input$terpilih_nama_variabel_uji_stasioner
+    
+    dat_proses <- data_lengkap[c(nama_pilih)]
+    
+    
+    #############
+    
+    
+    terpilih_nama_tahun <- input$terpilih_nama_tahun
+    terpilih_nama_tahun <- as.numeric(terpilih_nama_tahun)
+    
+    full_tahun <- data_lengkap[,"Tahun"]
+    
+    
+    indeks <- full_tahun %in% terpilih_nama_tahun 
+    indeks <- which(indeks==TRUE)
+    
+    dat_proses <- dat_proses[c(indeks),]
+    
+    
+    
+    ################
+    
+    
+    dat_VECM <- dat_proses
+    
+    Tstat <- vector(mode = "numeric")
+    Tkritis <- vector(mode = "numeric")
+    kesimpulan <- vector(mode = "character")
+    
+    #nama_pilih <- colnames(dat_proses)
+    
+    
+    for(i in 1 : length(nama_pilih) )
+    {
+      X <- dat_VECM[,i]
+      X <- diff(X)
+      
+      hasil = urca::ur.df(X, type = c("none"),
+                          lags = 0, selectlags = "AIC")
+      
+      #hasil@teststat
+      
+      #hasil@cval
+      
+      Tstat[i] <- hasil@teststat
+      Tkritis[i] <- hasil@cval[2]
+      
+      if(abs(Tstat[i]) < abs(Tkritis[i]))
+      {
+        
+        kalimat = paste0("Data pada Variabel ", nama_pilih[i] , " Tidak Stasioner pada First Difference")
+        kesimpulan[i] <- kalimat
+        
+      }
+      
+      if(abs(Tstat[i]) >= abs(Tkritis[i]))
+      {
+        
+        kalimat = paste0("Data pada Variabel ", nama_pilih[i] , " Stasioner pada First Difference")
+        kesimpulan[i] <- kalimat
+        
+      }
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+    }
+    
+    
+    dframe <- data.frame(nama_pilih, Tstat, Tkritis, kesimpulan)
+    colnames(dframe) <- c("Variabel", "Statistik T", "Nilai Kritis T pada Tingkat Signifikansi 5%", "Kesimpulan")
+    
+    
+    print(dframe)
+    
+    
+    
+    
+    
+    
+  })
   
   
   

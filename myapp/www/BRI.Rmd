@@ -90,6 +90,157 @@ p
 
 
 
+```{r}
+    dat <- read_xlsx("Data Keuangan Bank BRI.xlsx")
+    
+    dat <- as.data.frame(dat)
+    
+    dat_proses <- dat[c(1,2,3,4,5,6,7,8,9)]
+    
+
+dat_VECM <- dat_proses[c("NPL (%)", "Earning per Share (Rp)")]
+
+dat_VECM
+
+```
+
+
+```{r}
+library(urca)
+
+Tstat <- vector(mode = "numeric")
+Tkritis <- vector(mode = "numeric")
+kesimpulan <- vector(mode = "character")
+
+nama <- colnames(dat_VECM)
+
+
+for(i in 1 : length(nama))
+{
+X <- dat_VECM[,i]
+
+hasil = urca::ur.df(X, type = c("none"),
+lags = 0, selectlags = "AIC")
+
+#hasil@teststat
+
+#hasil@cval
+
+Tstat[i] <- hasil@teststat
+Tkritis[i] <- hasil@cval[2]
+
+if(abs(Tstat[i]) < abs(Tkritis[i]))
+{
+  
+  kalimat = paste0("Data pada Variabel ", nama[i] , " Tidak Stasioner pada Level")
+  kesimpulan[i] <- kalimat
+  
+}
+
+if(abs(Tstat[i]) > abs(Tkritis[i]))
+{
+  
+  kalimat = paste0("Data pada Variabel ", nama[i] , " Stasioner pada Level")
+  kesimpulan[i] <- kalimat
+  
+}
+
+
+
+
+
+
+
+
+
+
+}
+
+
+dframe <- data.frame(nama, Tstat, Tkritis, kesimpulan)
+colnames(dframe) <- c("Variabel", "Statistik T", "Nilai Kritis T pada Tingkat Signifikansi 5%", "Kesimpulan")
+
+dframe
+
+
+```
+
+
+
+
+
+
+```{r}
+library(urca)
+
+Tstat <- vector(mode = "numeric")
+Tkritis <- vector(mode = "numeric")
+kesimpulan <- vector(mode = "character")
+
+nama <- colnames(dat_VECM)
+
+
+for(i in 1 : length(nama))
+{
+X <- dat_VECM[,i]
+X <- diff(X)
+
+hasil = urca::ur.df(X, type = c("none"),
+lags = 0, selectlags = "AIC")
+
+#hasil@teststat
+
+#hasil@cval
+
+Tstat[i] <- hasil@teststat
+Tkritis[i] <- hasil@cval[2]
+
+if(abs(Tstat[i]) < abs(Tkritis[i]))
+{
+  
+  kalimat = paste0("Data pada Variabel ", nama[i] , " Tidak Stasioner pada First Difference")
+  kesimpulan[i] <- kalimat
+  
+}
+
+if(abs(Tstat[i]) > abs(Tkritis[i]))
+{
+  
+  kalimat = paste0("Data pada Variabel ", nama[i] , " Stasioner pada First Difference")
+  kesimpulan[i] <- kalimat
+  
+}
+
+
+
+
+
+
+
+
+
+
+}
+
+
+dframe <- data.frame(nama, Tstat, Tkritis, kesimpulan)
+colnames(dframe) <- c("Variabel", "Statistik T", "Nilai Kritis T pada Tingkat Signifikansi 5%", "Kesimpulan")
+
+dframe
+
+
+```
+
+
+
+
+
+
+
+
+
+
+
 
 
 
